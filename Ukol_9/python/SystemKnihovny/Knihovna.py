@@ -37,6 +37,14 @@ class Knihovna:
         try:
             with open(soubor, mode="r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
+                first_row = next(reader, None)  # Získání prvního řádku (pokud existuje)
+                if first_row is not None:
+                    nazev_knihovny = first_row.get("nazev", "Neznámá knihovna")
+                    knihovna = cls(nazev_knihovny)
+                    # Vraťme první řádek zpět do čtecího proudu
+                    f.seek(0)
+                    next(reader)  # přeskočíme první řádek, který jsme již použili pro název knihovny
+                    
                 for radek in reader:
                     # Inicializace knihovny
                     if knihovna is None:
