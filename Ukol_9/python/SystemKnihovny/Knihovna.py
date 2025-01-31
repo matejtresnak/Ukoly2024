@@ -19,7 +19,7 @@ class Knihovna:
 
         def wrapper(self, isbn: str, *args, **kwargs):
             if not any(kniha.isbn == isbn for kniha in self.knihy):
-                raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
+                raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
             return funkce(self, isbn, *args, **kwargs)
         return wrapper
 
