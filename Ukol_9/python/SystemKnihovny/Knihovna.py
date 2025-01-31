@@ -24,39 +24,42 @@ class Knihovna:
         return wrapper
 
     @classmethod
-    def z_csv(cls, soubor: str) -> Knihovna:
+    def z_csv(cls, soubor: str) -> "Knihovna":
         """
         Načte data knihovny ze souboru CSV.
 
         Args:
             soubor: Cesta k souboru CSV.
+
         Returns:
             Objekt Knihovna načtený ze souboru.
         """
         knihovna = None
+
         try:
             with open(soubor, mode="r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
-                first_row = next(reader, None)  # Získání prvního řádku (pokud existuje)
-                if first_row is not None:
-                    nazev_knihovny = first_row.get("nazev", "Neznámá knihovna")
-                    knihovna = cls(nazev_knihovny)
-                    # Vraťme první řádek zpět do čtecího proudu
-                    f.seek(0)
-                    next(reader)  # přeskočíme první řádek, který jsme již použili pro název knihovny
-                    
+                
                 for radek in reader:
-                    # Inicializace knihovny
-                    if knihovna is None:
-                        knihovna = cls(radek.get("nazev", "Neznámá knihovna"))
+                    # Získání názvu knihovny z řádku
+                    nazev_knihovny = radek.get("nazev", "Neznámá knihovna").strip()
                     
+                    # Inicializace knihovny pouze jednou
+                    if knihovna is None:
+                        knihovna = cls(nazev_knihovny)
+
                     # Rozlišení podle typu
                     typ = radek.get("typ", "").strip().lower()
                     if typ == "kniha":
+                        try:
+                            rok_vydani = int(radek["rok_vydani"]) if radek["rok_vydani"] else None
+                        except ValueError:
+                            rok_vydani = None  # Pokud je rok_vydani neplatný, nastavíme None
+
                         knihovna.pridej_knihu(Kniha(
-                            nazev=radek["nazev"],
+                            nazev=nazev_knihovny,
                             autor=radek["autor"],
-                            rok_vydani=int(radek["rok_vydani"]),
+                            rok_vydani=rok_vydani,
                             isbn=radek["isbn"]
                         ))
                     elif typ == "ctenar":
@@ -64,6 +67,7 @@ class Knihovna:
                             jmeno=radek["jmeno"],
                             prijmeni=radek["prijmeni"]
                         ))
+
         except Exception as e:
             raise ValueError(f"Chyba při načítání CSV: {e}")
         
@@ -71,6 +75,7 @@ class Knihovna:
             raise ValueError("Soubor neobsahuje validní data knihovny.")
         
         return knihovna
+
 
     def pridej_knihu(self, kniha: Kniha):
         if any(k._isbn == kniha.isbn for k in self.knihy):
