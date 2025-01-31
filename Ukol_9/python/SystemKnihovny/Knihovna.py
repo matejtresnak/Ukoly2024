@@ -19,7 +19,7 @@ class Knihovna:
 
         def wrapper(self, isbn: str, *args, **kwargs):
             if not any(kniha.isbn == isbn for kniha in self.knihy):
-                raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
+                raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
             return funkce(self, isbn, *args, **kwargs)
         return wrapper
 
@@ -118,8 +118,10 @@ class Knihovna:
 
     @kniha_existuje
     def vypujc_knihu(self, isbn: str, ctenar: Ctenar):
-        datum = datetime.datetime.now()  # aktuální datum a čas
-        self.vypujcene_knihy[isbn] = (ctenar, datum)  # uložíme Ctenar a datum
+        if isbn in self.vypujcene_knihy:
+            raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
+        datum = datetime.datetime.now()
+        self.vypujcene_knihy[isbn] = (ctenar, datum)
 
     def __str__(self) -> str:
         knihy_vypis = "\n".join([str(kniha) for kniha in self.knihy])
