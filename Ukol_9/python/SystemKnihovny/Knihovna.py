@@ -40,24 +40,28 @@ class Knihovna:
             with open(soubor, mode="r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 
-                for radek in reader:
-                    # Získání názvu knihovny z řádku
-                    nazev_knihovny = radek.get("nazev", "Neznámá knihovna").strip()
-                    
-                    # Inicializace knihovny pouze jednou
-                    if knihovna is None:
-                        knihovna = cls(nazev_knihovny)
+                # Před načítáním dat z CSV souboru načteme název knihovny z prvního řádku
+                first_row = next(reader, None)
+                if first_row is not None:
+                    nazev_knihovny = first_row.get("nazev", "Neznámá knihovna").strip()
+                    knihovna = cls(nazev_knihovny)
+                
+                # Pokud není knihovna inicializována, použijeme výchozí název
+                if knihovna is None:
+                    knihovna = cls("Neznámá knihovna")
 
+                # Čteme všechny následující řádky
+                for radek in reader:
                     # Rozlišení podle typu
                     typ = radek.get("typ", "").strip().lower()
                     if typ == "kniha":
                         try:
                             rok_vydani = int(radek["rok_vydani"]) if radek["rok_vydani"] else None
                         except ValueError:
-                            rok_vydani = None  # Pokud je rok_vydani neplatný, nastavíme None
+                            rok_vydani = None  # Pokud je rok_vydani neplatné, nastavíme None
 
                         knihovna.pridej_knihu(Kniha(
-                            nazev=nazev_knihovny,
+                            nazev=radek["nazev"],
                             autor=radek["autor"],
                             rok_vydani=rok_vydani,
                             isbn=radek["isbn"]
@@ -75,6 +79,7 @@ class Knihovna:
             raise ValueError("Soubor neobsahuje validní data knihovny.")
         
         return knihovna
+
 
 
     def pridej_knihu(self, kniha: Kniha):
