@@ -120,7 +120,7 @@ class Knihovna:
     def vypujc_knihu(self, isbn: str, ctenar: Ctenar):
         if isbn in self.vypujcene_knihy:
             raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
-        datum = datetime.datetime.now()
+        datum = datetime.date.today()
         self.vypujcene_knihy[isbn] = (ctenar, datum)
 
     def __str__(self) -> str:
