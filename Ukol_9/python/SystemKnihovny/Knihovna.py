@@ -26,11 +26,11 @@ class Knihovna:
     @classmethod
     def z_csv(cls, soubor: str) -> "Knihovna":
         """
-        Načte data knihovny ze souboru CSV.
-
+        Načte data knihovny ze souboru CSV, kde první řádek obsahuje název knihovny.
+        
         Args:
             soubor: Cesta k souboru CSV.
-
+        
         Returns:
             Objekt Knihovna načtený ze souboru.
         """
@@ -38,19 +38,18 @@ class Knihovna:
 
         try:
             with open(soubor, mode="r", encoding="utf-8") as f:
+                reader = csv.reader(f)
+                # Přečteme první řádek pro název knihovny
+                first_line = next(reader, None)
+                if first_line is None or not first_line[0].startswith("Knihovna:"):
+                    raise ValueError("První řádek CSV souboru musí obsahovat název knihovny ve formátu 'Knihovna:Název_knihovny'")
+                
+                nazev_knihovny = first_line[0].split(":", 1)[1].strip()  # Extrahujeme název knihovny
+                knihovna = cls(nazev_knihovny)
+
+                # Čteme zbytek souboru
                 reader = csv.DictReader(f)
                 
-                # Před načítáním dat z CSV souboru načteme název knihovny z prvního řádku
-                first_row = next(reader, None)
-                if first_row is not None:
-                    nazev_knihovny = first_row.get("nazev", "Neznámá knihovna").strip()
-                    knihovna = cls(nazev_knihovny)
-                
-                # Pokud není knihovna inicializována, použijeme výchozí název
-                if knihovna is None:
-                    knihovna = cls("Neznámá knihovna")
-
-                # Čteme všechny následující řádky
                 for radek in reader:
                     # Rozlišení podle typu
                     typ = radek.get("typ", "").strip().lower()
@@ -79,7 +78,6 @@ class Knihovna:
             raise ValueError("Soubor neobsahuje validní data knihovny.")
         
         return knihovna
-
 
 
     def pridej_knihu(self, kniha: Kniha):
